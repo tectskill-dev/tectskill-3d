@@ -13,8 +13,17 @@ from __future__ import annotations
 from pathlib import Path
 
 
+def _dxf_unicode(text: str) -> str:
+    """Escape every non-ASCII character as ``\\U+XXXX`` — the DXF R12
+    convention AutoCAD, ezdxf and LibreCAD read back as Unicode. Writing
+    the file as ASCII with ``errors="replace"`` turned Thai (and accented
+    Spanish) layer names into ``???``, merging different views' layers."""
+    return "".join(c if ord(c) < 128 else f"\\U+{ord(c):04X}" for c in text)
+
+
 def _layer_name(name: str) -> str:
-    return (name or "VISTA").strip().upper().replace(" ", "_") or "VISTA"
+    return _dxf_unicode(
+        (name or "VISTA").strip().upper().replace(" ", "_") or "VISTA")
 
 
 def save_dxf_lines(path: str | Path, segments, layer: str = "VISTA") -> int:

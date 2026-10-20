@@ -23,6 +23,8 @@ plants the sign on the ground plane.
 """
 from __future__ import annotations
 
+import re
+
 from PySide6.QtGui import QFont, QPainterPath, QTextLayout, QVector3D
 
 from core.mesh import Mesh
@@ -33,7 +35,10 @@ _FONT_PT = 100.0
 
 
 def _font(font_family: str, bold: bool, italic: bool) -> QFont:
-    font = QFont(font_family)
+    # An empty family is the app's bundled text face (Sarabun: Thai and
+    # Latin, outlines without overlapping contours — see core/fonts.py).
+    from core.fonts import resolve_family
+    font = QFont(resolve_family(font_family))
     font.setPointSizeF(_FONT_PT)
     font.setBold(bold)
     font.setItalic(italic)
@@ -195,6 +200,54 @@ def _solid_from_rings(rings, scale: float, y_min: float,
     return mesh
 
 
+#: What the ``height`` of a 3D text measures. ``"block"``: the whole text,
+#: lowest to highest point — accents, tone marks and descenders included
+#: (the original rule). ``"body"``: one base letter (``H``; ``ก`` when the
+#: text is Thai), so marks above and vowels below ADD to it — the way a
+#: Thai sign is specified: «ตัวอักษรสูง 25 ซม.» is the consonant, and with
+#: the block rule «บ้าน» came out a third smaller than «กขค» at the same
+#: setting, because its tone mark ate into the height. ``"auto"``: body
+#: for text with Thai in it, block otherwise — Latin text is unchanged.
+HEIGHT_REFS = ("auto", "block", "body")
+
+#: Thai script block (U+0E00–U+0E7F).
+_THAI = re.compile("[\u0e00-\u0e7f]")
+
+
+def has_thai(text: str) -> bool:
+    return bool(_THAI.search(text or ""))
+
+
+def resolve_height_ref(text: str, height_ref: str = "block") -> str:
+    """``"block"`` or ``"body"`` for ``height_ref`` applied to ``text``."""
+    if height_ref == "auto":
+        return "body" if has_thai(text) else "block"
+    return "body" if height_ref == "body" else "block"
+
+
+def _body_height(text: str, font_family: str, bold: bool,
+                 italic: bool) -> float:
+    """Ink height (font units) of the base letter that ``"body"`` measures:
+    ``ก`` for Thai text, ``H`` otherwise, in the text's own font."""
+    rings = _path_rings(next(iter(_shaped_paths(
+        "ก" if has_thai(text) else "H", font_family, bold, italic).values()),
+        QPainterPath()))
+    ys = [y for ring in rings for _x, y in ring]
+    return (max(ys) - min(ys)) if ys else 0.0
+
+
+def _text_scale(rings, text: str, font_family: str, bold: bool, italic: bool,
+                height: float, height_ref: str) -> tuple[float, float]:
+    """``(scale, y_min)`` for ``height`` read the ``height_ref`` way; the
+    lowest point always sits at z=0, whichever rule sets the size."""
+    if resolve_height_ref(text, height_ref) == "body":
+        body = _body_height(text, font_family, bold, italic)
+        if body > 1e-9:
+            ys = [y for ring in rings for _x, y in ring]
+            return height / body, min(ys)
+    return _block_scale(rings, height)
+
+
 def _block_scale(rings, height: float) -> tuple[float, float]:
     """``(scale, y_min)`` for the whole text block: ``height`` is the REAL
     height of the block (what the engineer asked for), and the lowest point
@@ -207,19 +260,22 @@ def _block_scale(rings, height: float) -> tuple[float, float]:
 
 def build_text_mesh(text: str, font_family: str = "", bold: bool = False,
                     italic: bool = False, height: float = 0.25,
-                    thickness: float = 0.05) -> Mesh:
+                    thickness: float = 0.05,
+                    height_ref: str = "block") -> Mesh:
     """Build the 3D-text mesh in ONE piece: ``height`` is the letter height
     in metres, ``thickness`` the extrusion depth (0 → flat faces only)."""
     rings, _layout_h = _rings(text, font_family, bold, italic)
     if not rings:
         return Mesh()
-    scale, y_min = _block_scale(rings, height)
+    scale, y_min = _text_scale(rings, text, font_family, bold, italic,
+                               height, height_ref)
     return _solid_from_rings(rings, scale, y_min, thickness)
 
 
 def build_text_letters(text: str, font_family: str = "", bold: bool = False,
                        italic: bool = False, height: float = 0.25,
-                       thickness: float = 0.05) -> list[tuple[str, Mesh]]:
+                       thickness: float = 0.05,
+                       height_ref: str = "block") -> list[tuple[str, Mesh]]:
     """The same text as ONE MESH PER LETTER, ``(character, mesh)`` in
     reading order, spaces and empty glyphs left out. Every letter shares
     the block's scale and baseline, so the letters line up exactly as the
@@ -231,7 +287,8 @@ def build_text_letters(text: str, font_family: str = "", bold: bool = False,
     rings, _layout_h = _rings(text, font_family, bold, italic)
     if not rings:
         return []
-    scale, y_min = _block_scale(rings, height)
+    scale, y_min = _text_scale(rings, text, font_family, bold, italic,
+                               height, height_ref)
     paths = _shaped_paths(text, font_family, bold, italic)
     letters: list = []
     for i in sorted(paths):
@@ -245,15 +302,17 @@ def build_text_letters(text: str, font_family: str = "", bold: bool = False,
 
 
 #: The keys ``Group.text3d`` carries — everything the dialog asked for.
-TEXT_KEYS = ("text", "font", "bold", "italic", "height", "thickness")
+TEXT_KEYS = ("text", "font", "bold", "italic", "height", "thickness",
+             "height_ref")
 
 
 def text_params(text: str, font: str = "", bold: bool = True,
                 italic: bool = False, height: float = 0.25,
-                thickness: float = 0.05) -> dict:
+                thickness: float = 0.05, height_ref: str = "auto") -> dict:
     return {"text": str(text), "font": str(font or ""), "bold": bool(bold),
             "italic": bool(italic), "height": float(height),
-            "thickness": float(thickness)}
+            "thickness": float(thickness),
+            "height_ref": height_ref if height_ref in HEIGHT_REFS else "auto"}
 
 
 def _letter_groups(params: dict, xform=None) -> list:
@@ -266,7 +325,10 @@ def _letter_groups(params: dict, xform=None) -> list:
     for ch, mesh in build_text_letters(
             params["text"], params.get("font", ""), params.get("bold", True),
             params.get("italic", False), params.get("height", 0.25),
-            params.get("thickness", 0.05)):
+            params.get("thickness", 0.05),
+            # A record from before height_ref existed was sized by the
+            # block rule: re-laying it out must not resize it.
+            params.get("height_ref", "block")):
         g = Group(mesh, name=ch)
         g.xform = QMatrix4x4(xform) if xform is not None else QMatrix4x4()
         kids.append(g)

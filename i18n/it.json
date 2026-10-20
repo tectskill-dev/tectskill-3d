@@ -3001,5 +3001,9 @@
  "Group them when there are many": "Raggrupparle quando sono molte",
  "Always in submenus": "Sempre in sottomenu",
  "Each entry on its own": "Ogni voce separata",
- "How the extensions' entries show in the right-click menu (at once) and in the Extensions menu (at the next start).": "Come appaiono le voci delle estensioni nel menu del tasto destro (subito) e nel menu Estensioni (al prossimo avvio)."
+ "How the extensions' entries show in the right-click menu (at once) and in the Extensions menu (at the next start).": "Come appaiono le voci delle estensioni nel menu del tasto destro (subito) e nel menu Estensioni (al prossimo avvio).",
+ "Whole text": "Testo intero",
+ "Letter body": "Corpo della lettera",
+ "Height measures:": "L'altezza misura:",
+ "Whole text: lowest to highest point, accents and tone marks included. Letter body: the height of one base letter (H, or ก in Thai); marks above and below add to it. Automatic: letter body for Thai text, whole text otherwise.": "Testo intero: dal punto più basso al più alto, accenti e segni tonali inclusi. Corpo della lettera: l'altezza di una lettera base (H, o ก in tailandese); i segni sopra e sotto si aggiungono. Automatica: corpo della lettera per il testo tailandese, testo intero altrimenti."
 }

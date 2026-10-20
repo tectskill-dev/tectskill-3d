@@ -3003,5 +3003,9 @@
  "Group them when there are many": "Kelompokkan jika banyak",
  "Always in submenus": "Selalu dalam submenu",
  "Each entry on its own": "Setiap entri terpisah",
- "How the extensions' entries show in the right-click menu (at once) and in the Extensions menu (at the next start).": "Cara entri ekstensi ditampilkan di menu klik kanan (langsung) dan di menu Ekstensi (saat dibuka lagi)."
+ "How the extensions' entries show in the right-click menu (at once) and in the Extensions menu (at the next start).": "Cara entri ekstensi ditampilkan di menu klik kanan (langsung) dan di menu Ekstensi (saat dibuka lagi).",
+ "Whole text": "Seluruh teks",
+ "Letter body": "Badan huruf",
+ "Height measures:": "Tinggi diukur dari:",
+ "Whole text: lowest to highest point, accents and tone marks included. Letter body: the height of one base letter (H, or ก in Thai); marks above and below add to it. Automatic: letter body for Thai text, whole text otherwise.": "Seluruh teks: dari titik terendah ke tertinggi, termasuk aksen dan tanda nada. Badan huruf: tinggi satu huruf dasar (H, atau ก dalam bahasa Thai); tanda di atas dan di bawah menambahinya. Otomatis: badan huruf untuk teks Thai, seluruh teks untuk lainnya."
 }

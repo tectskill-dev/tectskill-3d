@@ -26,10 +26,12 @@ from core.paths import app_root
 _I18N_DIR = app_root() / "i18n"
 
 #: How each language names itself in the Language menu and Preferences.
+from core.brand import brand as _brand  # noqa: E402
+
 LANGUAGE_NAMES = {"en": "English", "es": "Español",
                   "pt-BR": "Português (Brasil)", "zh-CN": "简体中文", "it": "Italiano",
                   "id": "Bahasa Indonesia", "fr": "Français", "de": "Deutsch",
-                  "pl": "Polski", "ru": "Русский"}
+                  "pl": "Polski", "ru": "Русский", "th": "ไทย"}
 
 _catalog: dict[str, str] = {}
 _lang = "en"
@@ -86,6 +88,12 @@ def tr(text: str, /, **kwargs) -> str:
     ``.format`` runs only when keyword arguments are given, so source strings
     that contain literal braces are safe when called without kwargs.
     """
+    return _brand(tr_raw(text, **kwargs))
+
+
+def tr_raw(text: str, /, **kwargs) -> str:
+    """:func:`tr` without the build's branding — for the credits, where
+    IngeTrazo is the name of the project its contributors worked on."""
     out = _catalog.get(text, text)
     if kwargs:
         try:

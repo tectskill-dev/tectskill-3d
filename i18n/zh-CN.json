@@ -3001,5 +3001,9 @@
  "Group them when there are many": "数量多时分组",
  "Always in submenus": "始终放在子菜单中",
  "Each entry on its own": "每个条目单独显示",
- "How the extensions' entries show in the right-click menu (at once) and in the Extensions menu (at the next start).": "扩展的条目在右键菜单（立即生效）和扩展菜单（下次启动时生效）中的显示方式。"
+ "How the extensions' entries show in the right-click menu (at once) and in the Extensions menu (at the next start).": "扩展的条目在右键菜单（立即生效）和扩展菜单（下次启动时生效）中的显示方式。",
+ "Whole text": "整段文字",
+ "Letter body": "字母主体",
+ "Height measures:": "高度测量：",
+ "Whole text: lowest to highest point, accents and tone marks included. Letter body: the height of one base letter (H, or ก in Thai); marks above and below add to it. Automatic: letter body for Thai text, whole text otherwise.": "整段文字：从最低点到最高点，含重音符号和声调符号。字母主体：一个基本字母的高度（H，泰文为 ก）；上下方的符号另外叠加。自动：泰文使用字母主体，其他情况使用整段文字。"
 }

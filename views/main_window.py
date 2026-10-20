@@ -83,6 +83,8 @@ from views.icons import tool_icon
 from views.viewport import Viewport
 
 
+from core.brand import APP_NAME  # noqa: E402
+
 IGZ_FILE_FILTER = "IngeTrazo document (*.igz);;All files (*)"
 
 # What each command does, for the status bar, the button tooltips and F3
@@ -6205,8 +6207,8 @@ class MainWindow(QMainWindow):
         text_edit.selectAll()
         form.addRow(tr("Text:"), text_edit)
         font_box = QFontComboBox()
-        if params.get("font"):
-            font_box.setCurrentFont(QFont(params["font"]))
+        from core.fonts import resolve_family
+        font_box.setCurrentFont(QFont(resolve_family(params.get("font"))))
         form.addRow(tr("Font:"), font_box)
         bold_check = QCheckBox()
         bold_check.setChecked(bool(params.get("bold", True)))
@@ -6217,6 +6219,22 @@ class MainWindow(QMainWindow):
         height_spin = LengthSpinBox(minimum=0.001, maximum=1000.0)
         height_spin.setValue(float(params.get("height", 0.25)))
         form.addRow(tr("Height:"), height_spin)
+        from PySide6.QtWidgets import QComboBox
+        ref_box = QComboBox()
+        for label, ref in ((tr("Automatic"), "auto"),
+                           (tr("Whole text"), "block"),
+                           (tr("Letter body"), "body")):
+            ref_box.addItem(label, ref)
+        # A new text starts on Automatic; a text made before this option
+        # existed was sized by the whole block, and keeps that.
+        current = params.get("height_ref", "block" if params else "auto")
+        ref_box.setCurrentIndex(max(0, ref_box.findData(current)))
+        ref_box.setToolTip(tr(
+            "Whole text: lowest to highest point, accents and tone marks "
+            "included. Letter body: the height of one base letter (H, or ก "
+            "in Thai); marks above and below add to it. Automatic: letter "
+            "body for Thai text, whole text otherwise."))
+        form.addRow(tr("Height measures:"), ref_box)
         depth_spin = LengthSpinBox(minimum=0.0, maximum=1000.0)
         depth_spin.setValue(float(params.get("thickness", 0.05)))
         depth_spin.setToolTip(tr("0 leaves flat faces (no extrusion)"))
@@ -6234,7 +6252,7 @@ class MainWindow(QMainWindow):
         return text_params(
             text, font_box.currentFont().family(), bold_check.isChecked(),
             italic_check.isChecked(), height_spin.value(),
-            depth_spin.value())
+            depth_spin.value(), ref_box.currentData())
 
     @_repeatable("3D Text")
     def _on_insert_3d_text(self) -> None:
@@ -7724,7 +7742,7 @@ class MainWindow(QMainWindow):
     def _update_title(self) -> None:
         if self._workspace is not None:
             marker = " *" if self._is_dirty() else ""
-            self.setWindowTitle(f"IngeTrazo — {self._workspace.title()}{marker}")
+            self.setWindowTitle(f"{APP_NAME} — {self._workspace.title()}{marker}")
             return
         if self._current_path is not None:
             name = self._current_path.name
@@ -7733,7 +7751,7 @@ class MainWindow(QMainWindow):
         else:
             name = tr("Untitled")
         marker = " *" if self._is_dirty() else ""
-        self.setWindowTitle(f"IngeTrazo — {name}{marker}")
+        self.setWindowTitle(f"{APP_NAME} — {name}{marker}")
         self._refresh_sheet_tabs()      # a new / opened document: its sheets
 
     # ---- Window lifecycle ---------------------------------------------------

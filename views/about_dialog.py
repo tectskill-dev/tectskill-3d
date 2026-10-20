@@ -23,7 +23,9 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from core.i18n import tr
+from core.brand import (APP_NAME, PUBLISHER, PUBLISHER_URL, SOURCE_URL,
+                        UPSTREAM_URL)
+from core.i18n import tr, tr_raw
 
 #: (name, what they gave — English source for tr(), link or "").
 #: Those who have given the most — a star beside their name, first in
@@ -197,7 +199,7 @@ def _credits_html(people) -> str:
                else f"<b>{name}</b>")
         if name in STARRED:
             who = f"<span style='color:#e8a33d'>★</span> {who}"
-        rows.append(f"<p style='margin:0 0 10px 0'>{who}<br>{tr(role)}</p>")
+        rows.append(f"<p style='margin:0 0 10px 0'>{who}<br>{tr_raw(role)}</p>")
     return "".join(rows)
 
 
@@ -320,7 +322,8 @@ def system_info(version: str, gl_line: str = "") -> str:
 
     from core.i18n import current_language
 
-    lines = [f"IngeTrazo {version} ({_build()})",
+    lines = [f"{APP_NAME} {version} ({_build()})",
+             "Based on: IngeTrazo",
              f"OS: {_os_name()} ({platform.machine()})",
              f"Python: {platform.python_version()}",
              f"Qt: {qVersion()}, PySide6: {PySide6.__version__}"]
@@ -400,19 +403,28 @@ class AboutDialog(QDialog):
         # Which engine computes the heavy parts (Rust when the experimental
         # native engine is on and loads) — the first thing a report needs.
         gl += f"<br><small>{tr('Engine')}: {engine()}</small>"
-        para("<b style='font-size:15px'>IngeTrazo</b> "
+        host = PUBLISHER_URL.split("://", 1)[-1].rstrip("/")
+        para(f"<b style='font-size:15px'>{APP_NAME}</b> "
              f"{tr('Version')} {version}{gl}<br>"
              f"{tr('Free 3D modeler for architecture, engineering and 3D design.')}<br>"
-             f"{tr('Created by')} <b>Marco Sumari Tellez</b> — "
+             f"{tr('Thai edition by')} <b>{PUBLISHER}</b> · "
+             f"<a href='{PUBLISHER_URL}'>{host}</a><br>"
+             # The credit of the program it is built on — never branded.
+             f"{tr_raw('Based on IngeTrazo, created by')} "
+             f"<b>Marco Sumari Tellez</b> — "
              f"{tr('Civil Engineer — Arequipa, Peru')}")
         head = para(f"<b>{tr('With contributions from')}</b>")
         head.setContentsMargins(0, 8, 0, 0)
         self.credits = _Credits(CONTRIBUTORS, self)
         col.addWidget(self.credits)
         para(f"<small>{tr('And thanks to everyone who tries IngeTrazo and reports what they find.')}</small>")
+        source = (f" · {tr('Source code of this edition')}: "
+                  f"<a href='{SOURCE_URL}'>"
+                  f"{SOURCE_URL.split('://', 1)[-1]}</a>"
+                  if SOURCE_URL else "")
         para(f"<small>{tr('Licensed under GPL-3.0-or-later.')} · "
-             "<a href='https://github.com/ingelibre/ingetrazo'>"
-             "github.com/ingelibre/ingetrazo</a></small>")
+             f"IngeTrazo: <a href='{UPSTREAM_URL}'>"
+             f"{UPSTREAM_URL.split('://', 1)[-1]}</a>{source}</small>")
         buttons = QDialogButtonBox(QDialogButtonBox.Ok, self)
         buttons.accepted.connect(self.accept)
         # What to paste in a bug report, one click away (#476).

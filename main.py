@@ -58,6 +58,8 @@ def _init_language() -> None:
             # The Brazilian Portuguese catalogue (PR #54, @dafrobozao)
             # serves every Portuguese locale until a pt-PT one exists.
             saved = "pt-BR"
+        elif system.language() == QLocale.Thai:
+            saved = "th"
         else:
             saved = "en"
     i18n.set_language(str(saved))
@@ -417,7 +419,12 @@ def main() -> int:
     _configure_surface_format()
     app = _App(sys.argv)
     app.setProperty("platform_forced", platform_forced)
-    app.setApplicationName("IngeTrazo")
+    app.setApplicationName("IngeTrazo")   # settings/extension folders: kept
+    from core.brand import APP_NAME
+    app.setApplicationDisplayName(APP_NAME)
+    # The bundled text face (Sarabun) before any sheet or 3D text is drawn.
+    from core.fonts import register_bundled_fonts
+    register_bundled_fonts()
     app.setOrganizationName("IngeTrazo")
     app.setProperty("gpu_pref", gpu_pref)
     # A driver that cannot serve the format we just asked for takes the

@@ -18,6 +18,8 @@ document in place of the model.
 """
 from __future__ import annotations
 
+from core.brand import APP_NAME  # noqa: E402
+
 import os
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
@@ -275,7 +277,7 @@ def test_the_model_is_parked_and_comes_back(win):
     assert app.workspace() is ws
     assert win.viewport.scene is ws.scene and win.viewport.history is ws.history
     assert ws.scene.version > model.version              # no render cache is shared
-    assert win.windowTitle() == "IngeTrazo — job.xyz"
+    assert win.windowTitle() == f"{APP_NAME} — job.xyz"
     assert not app.enter_workspace(FakeWorkspace())      # one at a time
     assert app.leave_workspace()
     assert win.viewport.scene is model and win.viewport.history is history

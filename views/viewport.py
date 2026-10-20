@@ -818,6 +818,71 @@ def _ray_triangle(
     return t
 
 
+#: (text, font key, dpi) → (ink above baseline, ink below) in pixels.
+_LABEL_INK_CACHE: dict = {}
+
+
+def _label_font(point_size: int) -> QFont:
+    """The face leader texts are drawn and picked in: the app's bundled
+    text face (Sarabun — see core/fonts.py), bold, so a label reads the same
+    in the viewport as on the sheet, and Thai has a face of its own instead
+    of a per-machine fallback."""
+    from core.fonts import resolve_family
+    font = QFont(resolve_family(""))
+    font.setPointSize(point_size)
+    font.setBold(True)
+    return font
+
+
+def _label_line_ink(text: str, font: QFont, device=None) -> tuple:
+    """How far the glyphs of one line really reach above and below their
+    baseline (pixels), marks positioned by the shaper included. Font
+    metrics do not tell: Thai stacks a vowel AND a tone mark over the
+    consonant (ที่, ปู่) and hangs ุ ู under it, past both the ascent and
+    the descent, and ``tightBoundingRect`` ignores the stacking."""
+    dpi = device.logicalDpiY() if device is not None else 0
+    key = (text, font.key(), dpi)
+    hit = _LABEL_INK_CACHE.get(key)
+    if hit is not None:
+        return hit
+    from PySide6.QtGui import QPainterPath, QTextLayout
+    layout = (QTextLayout(text, font, device) if device is not None
+              else QTextLayout(text, font))
+    layout.beginLayout()
+    line = layout.createLine()
+    layout.endLayout()
+    ink = QPainterPath()
+    for run in layout.glyphRuns():
+        raw = run.rawFont()
+        for glyph, pos in zip(run.glyphIndexes(), run.positions()):
+            path = raw.pathForGlyph(glyph)
+            path.translate(pos.x(), pos.y() - line.ascent())
+            ink.addPath(path)
+    if ink.isEmpty():
+        result = (0.0, 0.0)
+    else:
+        r = ink.boundingRect()
+        result = (max(0.0, -r.top()), max(0.0, r.bottom()))
+    if len(_LABEL_INK_CACHE) > 4096:
+        _LABEL_INK_CACHE.clear()
+    _LABEL_INK_CACHE[key] = result
+    return result
+
+
+def _label_baselines(lines, fm, font: QFont, device=None) -> list:
+    """Offset of every line's baseline from the first one's. One
+    ``fm.height()`` apart — as always for Latin — unless the ink of two
+    neighbouring lines would touch, then just far enough apart to keep a
+    2 px gap (a Thai line of stacked tone marks under a line with ุ ู)."""
+    out = [0.0]
+    for prev, nxt in zip(lines, lines[1:]):
+        below = _label_line_ink(prev, font, device)[1]
+        above = _label_line_ink(nxt, font, device)[0]
+        out.append(out[-1] + max(float(fm.height()),
+                                 math.ceil(below + above + 2.0)))
+    return out
+
+
 def _point_to_segment_distance_2d(p, a, b) -> float:
     ax, ay = a
     bx, by = b
@@ -7835,13 +7900,16 @@ class Viewport(QOpenGLWidget):
         fm = painter.fontMetrics()
         lines = text.split("\n")
         tw = max(fm.horizontalAdvance(ln) for ln in lines)
-        th = fm.height() * len(lines)
+        # Translated captions (พื้นที่, ความยาวรอบรูป) stack marks past the
+        # font's line height: space the lines by their real ink.
+        offs = _label_baselines(lines, fm, font, painter.device())
+        th = int(math.ceil(offs[-1])) + fm.height()
         x, y = q[0] - tw / 2, q[1] - th / 2
         painter.fillRect(int(x) - 5, int(y) - 3, tw + 10, th + 6,
                          QColor(20, 24, 30, 190))
         painter.setPen(QColor(255, 255, 255))
-        for i, ln in enumerate(lines):
-            painter.drawText(QPointF(x, y + fm.ascent() + i * fm.height()), ln)
+        for ln, dy in zip(lines, offs):
+            painter.drawText(QPointF(x, y + fm.ascent() + dy), ln)
 
     @staticmethod
     def _text_block_x(p_pos, p_anchor, block_w: float) -> float:
@@ -7869,11 +7937,10 @@ class Viewport(QOpenGLWidget):
         default_ink = QColor(col[0], col[1], col[2])
         sel_ink = QColor(243, 115, 41)
         selection = self.scene.selection
-        font = QFont()
-        font.setPointSize(int(style.get("font_size", 9)))
-        font.setBold(True)
+        font = _label_font(int(style.get("font_size", 9)))
         painter.setFont(font)
         fm = painter.fontMetrics()
+        device = painter.device()
         for lab in labels:
             if not self.scene.entity_visible(lab):      # hidden layer
                 continue
@@ -7893,8 +7960,9 @@ class Viewport(QOpenGLWidget):
             lines = lab.text.splitlines() or [""]
             x = self._text_block_x(
                 p_pos, p_anchor, max(fm.horizontalAdvance(ln) for ln in lines))
-            for i, line in enumerate(lines):
-                y = p_pos[1] - 4 + i * fm.height()
+            for line, dy in zip(lines, _label_baselines(lines, fm, font,
+                                                        device)):
+                y = p_pos[1] - 4 + dy
                 painter.setPen(QPen(QColor(255, 255, 255, 230)))
                 painter.drawText(QPointF(x + 1, y + 1), line)
                 painter.setPen(QPen(ink))
@@ -10948,9 +11016,7 @@ class Viewport(QOpenGLWidget):
         if not labels:
             return None
         style = getattr(self.scene, "dimension_style", {})
-        font = QFont()
-        font.setPointSize(int(style.get("font_size", 9)))
-        font.setBold(True)
+        font = _label_font(int(style.get("font_size", 9)))
         # Measured on THIS widget, as the painter that draws the labels
         # does: bare QFontMetrics(font) reads the primary screen's DPI, and
         # on a scaled display the glyph box it gave missed the letters
@@ -10967,16 +11033,19 @@ class Viewport(QOpenGLWidget):
                 continue
             pa = self._world_to_pixel(lab.anchor)
             # The text block: lines start at _text_block_x(...), first
-            # baseline at pp.y - 4, one fm.height() apart (mirror of
+            # baseline at pp.y - 4, then _label_baselines apart (mirror of
             # _draw_text_labels).
             lines = lab.text.splitlines() or [""]
             x0 = self._text_block_x(
                 pp, pa, max(fm.horizontalAdvance(ln) for ln in lines))
-            for i, line in enumerate(lines):
-                base = pp[1] - 4 + i * fm.height()
+            device = self if isinstance(self, QPaintDevice) else None
+            for line, dy in zip(lines, _label_baselines(lines, fm, font,
+                                                        device)):
+                base = pp[1] - 4 + dy
+                above, below = _label_line_ink(line, font, device)
                 if (x0 - 3 <= screen_x <= x0 + fm.horizontalAdvance(line) + 3
-                        and base - fm.ascent() - 3 <= screen_y
-                        <= base + fm.descent() + 3):
+                        and base - max(fm.ascent(), above) - 3 <= screen_y
+                        <= base + max(fm.descent(), below) + 3):
                     return lab
             if rect_only:
                 continue
