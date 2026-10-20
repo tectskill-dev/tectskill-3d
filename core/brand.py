@@ -28,6 +28,11 @@ PUBLISHER_URL = "https://tectskill.com"
 #: Empty: the About dialog links only to upstream IngeTrazo.
 SOURCE_URL = "https://github.com/tectskill-dev/tectskill-3d"
 
+#: The language a first start opens in, whatever the Windows locale says
+#: (most Thai PCs run an English Windows). A language picked later in
+#: Window > Language still wins. Empty: follow the system locale.
+DEFAULT_LANGUAGE = "th"
+
 #: The upstream project this edition is built on.
 UPSTREAM_NAME = "IngeTrazo"
 UPSTREAM_URL = "https://github.com/ingelibre/ingetrazo"
