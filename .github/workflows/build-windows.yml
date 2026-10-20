@@ -213,7 +213,7 @@ jobs:
           cat > dist/ingetrazo/LEEME.txt <<'EOF'
           IngeTrazo para Windows
 
-          Recomendado: usar el INSTALADOR (ingetrazo-setup-vX.Y.Z.exe).
+          Recomendado: usar el INSTALADOR (TectSkill-3D-setup-vX.Y.Z.exe).
           Este .zip es la version portable para usuarios tecnicos.
 
           === Modo portable (este .zip) ===
@@ -272,7 +272,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: setup-sin-firmar
-          path: dist/ingetrazo-setup-v*.exe
+          path: dist/TectSkill-3D-setup-v*.exe
           if-no-files-found: error
           retention-days: 1
 
@@ -297,7 +297,7 @@ jobs:
         if: steps.firma.outputs.on == 'true'
         shell: pwsh
         run: |
-          $files = @("dist/ingetrazo/ingetrazo.exe", "dist/ingetrazo/ingetrazo-mcp.exe") + (Get-ChildItem dist/ingetrazo-setup-v*.exe).FullName
+          $files = @("dist/ingetrazo/ingetrazo.exe", "dist/ingetrazo/ingetrazo-mcp.exe") + (Get-ChildItem dist/TectSkill-3D-setup-v*.exe).FullName
           foreach ($f in $files) {
             $sig = Get-AuthenticodeSignature $f
             "{0}: {1} — {2}" -f (Split-Path $f -Leaf), $sig.Status, $sig.SignerCertificate.Subject
@@ -311,10 +311,10 @@ jobs:
       - name: Subir artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ingetrazo-windows
+          name: TectSkill-3D-windows
           path: |
             dist/ingetrazo-windows.zip
-            dist/ingetrazo-setup-v*.exe
+            dist/TectSkill-3D-setup-v*.exe
           retention-days: 7
 
       # En push de tag: adjunta los binarios al Release de esa versión.
@@ -324,4 +324,4 @@ jobs:
         with:
           files: |
             dist/ingetrazo-windows.zip
-            dist/ingetrazo-setup-v*.exe
+            dist/TectSkill-3D-setup-v*.exe
