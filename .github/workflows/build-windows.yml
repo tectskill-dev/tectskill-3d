@@ -238,7 +238,7 @@ jobs:
       - name: Crear ZIP portable
         shell: pwsh
         run: |
-          Compress-Archive -Path dist/ingetrazo -DestinationPath dist/ingetrazo-windows.zip
+          $v = if ($env:GITHUB_REF -like 'refs/tags/v*') { $env:GITHUB_REF.Substring(11) } else { (Select-String core/version.py -Pattern '__version__ = "(.+)"').Matches[0].Groups[1].Value }; Copy-Item -Recurse dist/ingetrazo dist/TectSkill-3D; Compress-Archive -Path dist/TectSkill-3D -DestinationPath "dist/TectSkill-3D-v$v-Portable.zip"; Remove-Item -Recurse dist/TectSkill-3D
 
       - name: Extraer versión (del tag o de core/version.py)
         id: ver
@@ -313,7 +313,7 @@ jobs:
         with:
           name: TectSkill-3D-windows
           path: |
-            dist/ingetrazo-windows.zip
+            dist/TectSkill-3D-v*-Portable.zip
             dist/TectSkill-3D-setup-v*.exe
           retention-days: 7
 
@@ -323,5 +323,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/ingetrazo-windows.zip
+            dist/TectSkill-3D-v*-Portable.zip
             dist/TectSkill-3D-setup-v*.exe
