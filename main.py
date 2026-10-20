@@ -50,6 +50,9 @@ def _init_language() -> None:
     Portuguese, English otherwise.
     """
     saved = QSettings().value("language")
+    from core.brand import DEFAULT_LANGUAGE
+    if not saved and DEFAULT_LANGUAGE:
+        saved = DEFAULT_LANGUAGE
     if not saved:
         system = QLocale.system()
         if system.language() == QLocale.Spanish:
