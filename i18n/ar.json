@@ -3384,5 +3384,9 @@
   "The Bulgarian translation.": "الترجمة البلغارية.",
   "The Traditional Chinese translation.": "الترجمة الصينية التقليدية.",
   "A .skp component 10 000 times too big, traced.": "تتبُّع مكون .skp أكبر من حجمه بـ 10 000 مرة.",
-  "Thanks as well to all the authors of the extensions catalogue": "شكرًا أيضًا لجميع مؤلفي كتالوج الإضافات"
+  "Thanks as well to all the authors of the extensions catalogue": "شكرًا أيضًا لجميع مؤلفي كتالوج الإضافات",
+  "Whole text": "النص بأكمله",
+  "Letter body": "جسم الحرف",
+  "Height measures:": "يقيس الارتفاع:",
+  "Whole text: lowest to highest point, accents and tone marks included. Letter body: the height of one base letter (H, or ก in Thai); marks above and below add to it. Automatic: letter body for Thai text, whole text otherwise.": "النص بأكمله: من أدنى نقطة إلى أعلى نقطة، بما في ذلك علامات التشكيل والنبر. جسم الحرف: ارتفاع حرف أساسي واحد (H، أو ก في التايلاندية)؛ وتضاف العلامات فوقه وتحته. تلقائي: جسم الحرف للنص التايلاندي، والنص بأكمله في غير ذلك."
 }

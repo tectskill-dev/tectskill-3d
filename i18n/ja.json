@@ -3349,5 +3349,9 @@
  "The Bulgarian translation.": "ブルガリア語翻訳。",
  "The Traditional Chinese translation.": "繁体字中国語翻訳。",
  "A .skp component 10 000 times too big, traced.": "10 000 倍大きすぎる .skp コンポーネントの原因究明。",
- "Thanks as well to all the authors of the extensions catalogue": "拡張機能カタログのすべての作者にも感謝します"
+ "Thanks as well to all the authors of the extensions catalogue": "拡張機能カタログのすべての作者にも感謝します",
+ "Whole text": "テキスト全体",
+ "Letter body": "文字本体",
+ "Height measures:": "高さの基準:",
+ "Whole text: lowest to highest point, accents and tone marks included. Letter body: the height of one base letter (H, or ก in Thai); marks above and below add to it. Automatic: letter body for Thai text, whole text otherwise.": "テキスト全体: 最も低い点から最も高い点まで。アクセントや声調記号を含みます。文字本体: 基本となる1文字の高さ（H、タイ語では ก）。上下の記号はその外側に付きます。自動: タイ語のテキストは文字本体、それ以外はテキスト全体。"
 }

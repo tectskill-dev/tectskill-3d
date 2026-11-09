@@ -7,6 +7,7 @@ import pytest
 
 from PySide6.QtWidgets import QApplication
 
+from core.brand import APP_NAME
 from core.i18n import current_language, set_language
 from views.about_dialog import AboutDialog, system_info
 
@@ -17,7 +18,8 @@ _GL = "NVIDIA Corporation · RTX 9999/PCIe · OpenGL 4.6.0"
 
 def test_the_info_names_program_system_python_qt_and_gl():
     text = system_info("9.8.7", _GL)
-    assert text.splitlines()[0].startswith("IngeTrazo 9.8.7")
+    assert text.splitlines()[0].startswith(f"{APP_NAME} 9.8.7")
+    assert "Based on: IngeTrazo" in text
     from views.about_dialog import _os_name
     assert f"OS: {_os_name()} ({platform.machine()})" in text
     assert f"Python: {platform.python_version()}" in text
@@ -80,4 +82,4 @@ def test_the_first_line_says_how_this_copy_runs(monkeypatch, env, label):
         monkeypatch.delenv(key, raising=False)
     for key, value in env.items():
         monkeypatch.setenv(key, value)
-    assert system_info("9.8.7").splitlines()[0] == f"IngeTrazo 9.8.7 {label}"
+    assert system_info("9.8.7").splitlines()[0] == f"{APP_NAME} 9.8.7 {label}"

@@ -53,7 +53,13 @@ def _init_language() -> None:
     "Same as the system" chosen (#818), the OS display language picks the
     closest catalog (see :func:`core.i18n.language_for_locales`).
     """
-    lang = i18n.resolve_language(QSettings().value("language"))
+    saved = QSettings().value("language")
+    # TectSkill-3D opens in Thai the first time (most Thai PCs run an
+    # English Windows); a language picked later — "system" included — wins.
+    from core.brand import DEFAULT_LANGUAGE
+    if not saved and DEFAULT_LANGUAGE:
+        saved = DEFAULT_LANGUAGE
+    lang = i18n.resolve_language(saved)
     i18n.set_language(lang)
     _install_qt_translator(lang)
     # Arabic (#1067) and the other right-to-left languages mirror the
@@ -495,7 +501,12 @@ def main() -> int:
     _configure_surface_format()
     app = _App(sys.argv)
     app.setProperty("platform_forced", platform_forced)
-    app.setApplicationName("IngeTrazo")
+    app.setApplicationName("IngeTrazo")   # settings/extension folders: kept
+    from core.brand import APP_NAME
+    app.setApplicationDisplayName(APP_NAME)
+    # The bundled text face (Sarabun) before any sheet or 3D text is drawn.
+    from core.fonts import register_bundled_fonts
+    register_bundled_fonts()
     app.setOrganizationName("IngeTrazo")
     app.setProperty("gpu_pref", gpu_pref)
     # A driver that cannot serve the format we just asked for takes the

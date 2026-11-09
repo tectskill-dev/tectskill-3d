@@ -8,6 +8,8 @@ panels come back as the user had them, and quitting from the empty area
 keeps them."""
 from __future__ import annotations
 
+from core.brand import APP_NAME  # noqa: E402
+
 import sys
 
 import pytest
@@ -61,7 +63,7 @@ def test_closing_the_last_project_leaves_the_empty_area(win):
     assert not any(d.isVisible() for d in panels)
     assert not win._sidebar_handle.isVisible()
     assert not win._sheet_tabs.isVisible()
-    assert win.windowTitle() == "IngeTrazo"
+    assert win.windowTitle() == APP_NAME
 
 
 def test_plus_brings_a_project_and_everything_back(win):

@@ -3352,5 +3352,9 @@
  "The Bulgarian translation.": "Terjemahan bahasa Bulgaria.",
  "The Traditional Chinese translation.": "Terjemahan bahasa Tionghoa Tradisional.",
  "A .skp component 10 000 times too big, traced.": "Komponen .skp yang 10 000 kali terlalu besar, berhasil dilacak.",
- "Thanks as well to all the authors of the extensions catalogue": "Terima kasih juga kepada semua pembuat katalog ekstensi"
+ "Thanks as well to all the authors of the extensions catalogue": "Terima kasih juga kepada semua pembuat katalog ekstensi",
+ "Whole text": "Seluruh teks",
+ "Letter body": "Badan huruf",
+ "Height measures:": "Tinggi diukur dari:",
+ "Whole text: lowest to highest point, accents and tone marks included. Letter body: the height of one base letter (H, or ก in Thai); marks above and below add to it. Automatic: letter body for Thai text, whole text otherwise.": "Seluruh teks: dari titik terendah ke tertinggi, termasuk aksen dan tanda nada. Badan huruf: tinggi satu huruf dasar (H, atau ก dalam bahasa Thai); tanda di atas dan di bawah menambahinya. Otomatis: badan huruf untuk teks Thai, seluruh teks untuk lainnya."
 }

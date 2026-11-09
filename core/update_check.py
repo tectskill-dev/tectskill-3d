@@ -19,8 +19,10 @@ from dataclasses import dataclass
 
 from core.version import USER_AGENT, __version__
 
-LATEST_API = "https://api.github.com/repos/ingelibre/ingetrazo/releases/latest"
-RELEASES_PAGE = "https://github.com/ingelibre/ingetrazo/releases"
+from core.brand import RELEASES_REPO  # noqa: E402
+
+LATEST_API = f"https://api.github.com/repos/{RELEASES_REPO}/releases/latest"
+RELEASES_PAGE = f"https://github.com/{RELEASES_REPO}/releases"
 
 KEY_AUTO = "updates/check_at_start"
 KEY_LAST = "updates/last_check"

@@ -3376,5 +3376,9 @@
  "The Bulgarian translation.": "Bản dịch tiếng Bulgaria.",
  "The Traditional Chinese translation.": "Bản dịch tiếng Trung phồn thể.",
  "A .skp component 10 000 times too big, traced.": "Truy ra một thành phần .skp lớn gấp 10 000 lần.",
- "Thanks as well to all the authors of the extensions catalogue": "Xin cảm ơn tất cả tác giả trong danh mục tiện ích mở rộng"
+ "Thanks as well to all the authors of the extensions catalogue": "Xin cảm ơn tất cả tác giả trong danh mục tiện ích mở rộng",
+ "Whole text": "Toàn bộ văn bản",
+ "Letter body": "Thân chữ",
+ "Height measures:": "Chiều cao đo theo:",
+ "Whole text: lowest to highest point, accents and tone marks included. Letter body: the height of one base letter (H, or ก in Thai); marks above and below add to it. Automatic: letter body for Thai text, whole text otherwise.": "Toàn bộ văn bản: từ điểm thấp nhất đến điểm cao nhất, kể cả dấu và thanh điệu. Thân chữ: chiều cao của một chữ cơ sở (H, hoặc ก trong tiếng Thái); các dấu phía trên và dưới nằm ngoài phần này. Tự động: thân chữ cho văn bản tiếng Thái, toàn bộ văn bản cho các trường hợp khác."
 }
