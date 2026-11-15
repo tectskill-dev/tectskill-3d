@@ -10,6 +10,8 @@ and recovery, the extension hooks, copy and paste between projects, and
 that a closed project lets its memory go."""
 from __future__ import annotations
 
+from core.brand import APP_NAME  # noqa: E402
+
 import gc
 import os
 import weakref
@@ -192,12 +194,12 @@ def test_switching_drops_the_tool_and_leaves_the_group(win):
 def test_the_title_and_the_tab_mark_follow_the_front(win, tmp_path):
     path = _igz(tmp_path, "casa.igz")
     win.open_path(path)
-    assert win.windowTitle() == "IngeTrazo — casa.igz"
+    assert win.windowTitle() == f"{APP_NAME} — casa.igz"
     _edit(win)
     assert win.windowTitle().endswith(" *")
     assert win._project_tabs.tabs.tabText(0) == "casa.igz •"
     win._on_new()
-    assert win.windowTitle() == "IngeTrazo — Untitled"
+    assert win.windowTitle() == f"{APP_NAME} — Untitled"
     # The background tab still says it has unsaved changes.
     assert win._project_tabs.tabs.tabText(0) == "casa.igz •"
 

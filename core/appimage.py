@@ -16,6 +16,8 @@ their absence means we are not running as one and nothing here applies.
 """
 from __future__ import annotations
 
+from core.brand import APP_NAME
+
 import os
 import shutil
 import subprocess
@@ -68,7 +70,7 @@ def _desktop_entry(appimage: Path) -> str:
     return (
         "[Desktop Entry]\n"
         "Type=Application\n"
-        "Name=IngeTrazo\n"
+        f"Name={APP_NAME}\n"
         "GenericName=3D Modeler\n"
         "GenericName[es]=Modelador 3D\n"
         "Comment=Free 3D modeler for civil engineering and architecture\n"

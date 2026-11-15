@@ -3,9 +3,9 @@
 """The Windows installer keeps the previews of .skp files (issue #804).
 
 Explorer shows a thumbnail through the handler of the file's ProgID. The
-installer makes IngeTrazo.skp the default for .skp, and that ProgID has no
+installer makes TectSkill3D.skp the default for .skp, and that ProgID has no
 handler, so the previews of the program that owned the extension before
-disappeared. The [Code] section copies that handler to IngeTrazo.skp. Inno
+disappeared. The [Code] section copies that handler to TectSkill3D.skp. Inno
 Setup does not run on every machine, so this reads the script as text.
 """
 from __future__ import annotations
@@ -29,13 +29,13 @@ def _section(name: str) -> str:
 
 
 def test_app_id_is_unchanged():
-    assert "AppId={{63D1C88D-591C-48C8-A13B-5E41810D05E4}" in _script()
+    assert "AppId={{3B09C71C-8F10-4787-8550-CD9813E130F2}" in _script()
 
 
 def test_skp_progid_key_is_still_deleted_on_uninstall():
     entries = _section("Registry").replace("\\\n", " ").splitlines()
     entry = next(line for line in entries
-                 if r'Subkey: "Software\Classes\IngeTrazo.skp";' in line)
+                 if r'Subkey: "Software\Classes\TectSkill3D.skp";' in line)
     assert "uninsdeletekey" in entry
 
 
@@ -52,7 +52,7 @@ def test_thumbnail_handler_is_copied_to_the_skp_progid():
     assert THUMBNAIL_PROVIDER in code
     write = next(line for line in code.splitlines() if "RegWriteStringValue" in line)
     assert "HKA" in write and "SkpProgId" in write
-    assert "SkpProgId = 'IngeTrazo.skp'" in code
+    assert "SkpProgId = 'TectSkill3D.skp'" in code
 
 
 def test_handler_is_searched_in_progid_extension_and_system_associations():

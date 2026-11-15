@@ -36,7 +36,8 @@ from PySide6.QtWidgets import (
 )
 
 from core.desktop_open import open_url
-from core.i18n import current_language, tr
+from core.brand import APP_NAME
+from core.i18n import current_language, tr, tr_raw
 from core.extension_manager import (
     Extension,
     ExtensionManagerError,
@@ -212,7 +213,7 @@ class _CatalogTask(QRunnable):
 class ExtensionManagerDialog(QDialog):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
-        self.setWindowTitle(tr("Manage extensions") + " — IngeTrazo")
+        self.setWindowTitle(tr("Manage extensions") + " — " + APP_NAME)
         self.resize(1400, 860)
         self.setMinimumSize(1000, 650)
         self.setStyleSheet(
@@ -813,7 +814,7 @@ class ExtensionManagerDialog(QDialog):
         versions = QLabel(
             tr("Ships with IngeTrazo {version}", version=extension.version)
             if extension.bundled else
-            tr("v{version} · Tested with IngeTrazo {tested}",
+            tr_raw("v{version} · Tested with IngeTrazo {tested}",
                version=extension.version, tested=extension.minimum_version))
         versions.setObjectName("extVersions")
         version_row.addWidget(versions, 0, Qt.AlignTop)
@@ -838,7 +839,7 @@ class ExtensionManagerDialog(QDialog):
         summary.setMaximumHeight(100)
         details.addWidget(summary)
         if not reviewed and not extension.bundled:
-            community = QLabel(tr(
+            community = QLabel(tr_raw(
                 "Community extension — not reviewed by an IngeTrazo "
                 "maintainer."))
             community.setWordWrap(True)
@@ -850,12 +851,12 @@ class ExtensionManagerDialog(QDialog):
             restart.setWordWrap(True)
             details.addWidget(restart)
         if not compatible:
-            warning = QLabel(tr("Requires IngeTrazo {version} or later.",
+            warning = QLabel(tr_raw("Requires IngeTrazo {version} or later.",
                                 version=extension.minimum_version))
             warning.setWordWrap(True)
             details.addWidget(warning)
         elif tested_version_is_old(extension):
-            warning = QLabel(tr(
+            warning = QLabel(tr_raw(
                 "Compatibility is uncertain: this extension was tested with "
                 "IngeTrazo {version}.",
                 version=extension.minimum_version))
@@ -1274,7 +1275,7 @@ class ExtensionManagerDialog(QDialog):
             return True
         answer = QMessageBox.warning(
             self, tr("Install an unreviewed extension?"),
-            tr("«{name}» has not been reviewed by an IngeTrazo maintainer.\n\n"
+            tr_raw("«{name}» has not been reviewed by an IngeTrazo maintainer.\n\n"
                "Extensions are Python code: once installed it runs with your "
                "permissions and can read or change your files. Install it "
                "only if you trust its author ({author}).",

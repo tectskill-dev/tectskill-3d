@@ -69,6 +69,9 @@ _STD_VIEWS = (
 
 # ── mm-space painters (shared by canvas and PDF) ────────────────────────────
 
+from core.fonts import resolve_family  # noqa: E402
+
+
 def _draw_text_mm(painter: QPainter, rect: QRectF, text: str, size_mm: float,
                   bold: bool = False, align=Qt.AlignLeft | Qt.AlignTop,
                   color: QColor = QColor(30, 36, 44),
@@ -80,7 +83,7 @@ def _draw_text_mm(painter: QPainter, rect: QRectF, text: str, size_mm: float,
     if not text:
         return
     painter.save()
-    font = QFont(family or "Sans Serif")
+    font = QFont(resolve_family(family))
     font.setPixelSize(100)
     font.setBold(bold)
     font.setItalic(italic)
@@ -104,7 +107,7 @@ def text_baseline_rect_mm(size_mm: float, baseline_y: float,
     what «distancia texto–línea» means on Rafael's sheet — so the offset a
     drafter sets is the gap he sees, not the gap plus a font's ascent."""
     from PySide6.QtGui import QFontMetricsF
-    font = QFont(family or "Sans Serif")
+    font = QFont(resolve_family(family))
     font.setPixelSize(100)
     font.setBold(bold)
     fm = QFontMetricsF(font)
@@ -119,7 +122,7 @@ def text_cap_rect_mm(size_mm: float, cap_top_y: float,
     figures lands on ``cap_top_y`` — the gap of a label hanging BELOW a
     dimension line is measured to where its letters begin."""
     from PySide6.QtGui import QFontMetricsF
-    font = QFont("Sans Serif")
+    font = QFont(resolve_family("Sans Serif"))
     font.setPixelSize(100)
     cap = QFontMetricsF(font).capHeight() * size_mm / 100.0 * 0.75
     return text_baseline_rect_mm(size_mm, cap_top_y + cap, width)
@@ -132,7 +135,7 @@ def _fit_text_size_mm(text: str, rect: QRectF, base_size_mm: float,
     (mm units) — the title-block habit: a long project name drops to two
     or three lines and only then starts shrinking."""
     from PySide6.QtGui import QFontMetricsF
-    font = QFont(family or "Sans Serif")
+    font = QFont(resolve_family(family))
     font.setPixelSize(100)
     font.setBold(bold)
     fm = QFontMetricsF(font)
@@ -156,7 +159,7 @@ def _text_height_mm(text: str, width_mm: float, size_mm: float,
     from PySide6.QtGui import QFontMetricsF
     if not text:
         return 0.0
-    font = QFont(family or "Sans Serif")
+    font = QFont(resolve_family(family))
     font.setPixelSize(100)
     font.setBold(bold)
     fm = QFontMetricsF(font)
@@ -289,12 +292,13 @@ def view_title_texts(frame: MarcoVista) -> dict:
     }
 
 
-def _text_width_mm(text: str, size_mm: float, bold: bool = False) -> float:
+def _text_width_mm(text: str, size_mm: float, bold: bool = False,
+                   family: str = "Sans Serif") -> float:
     """Advance width of *text* as :func:`_draw_text_mm` would draw it."""
     if not text:
         return 0.0
     from PySide6.QtGui import QFontMetricsF
-    font = QFont("Sans Serif")
+    font = QFont(resolve_family(family))
     font.setPixelSize(100)
     font.setBold(bold)
     return QFontMetricsF(font).horizontalAdvance(text) * (size_mm / 100.0 * 0.75)
@@ -1912,7 +1916,7 @@ def _text_metrics(size_mm: float, bold: bool = False,
                   family: str = "Sans Serif"):
     """``(QFontMetricsF, scale)`` for the font :func:`_draw_text_mm` uses."""
     from PySide6.QtGui import QFontMetricsF
-    font = QFont(family or "Sans Serif")
+    font = QFont(resolve_family(family))
     font.setPixelSize(100)
     font.setBold(bold)
     return QFontMetricsF(font), size_mm / 100.0 * 0.75
@@ -1960,7 +1964,57 @@ def text_bg_span_mm(text: str, width_mm: float, size_mm: float,
         return 0.0, size_mm
     y0 = (fm.ascent() - fm.capHeight()) * s - 0.25 * size_mm
     y1 = (fm.ascent() + fm.descent() + (n - 1) * fm.lineSpacing()) * s + 0.05 * size_mm
+    # The cap-height rule above is tuned to Latin capitals. Thai stacks
+    # vowels and tone marks above the consonant (ที่, ปู่) and hangs ุ ู
+    # below it, past any Latin descender: grow the slab to the real ink
+    # where the glyphs reach further, so nothing pokes out of it. Latin
+    # text never reaches past the rule, so its slab is unchanged.
+    ink = _ink_span_mm(text, width_mm, size_mm, bold, family)
+    if ink is not None:
+        y0 = min(y0, ink[0] - 0.08 * size_mm)
+        y1 = max(y1, ink[1] + 0.08 * size_mm)
     return y0, y1
+
+
+def _ink_span_mm(text: str, width_mm: float, size_mm: float,
+                 bold: bool = False, family: str = "Sans Serif"):
+    """``(top, bottom)`` in mm of the glyph outlines *text* really inks
+    when :func:`_draw_text_mm` lays it out from y = 0 (word-wrapped in
+    ``width_mm``, lines at the font's line spacing, fallback fonts
+    included) — or ``None`` for text with no ink."""
+    from PySide6.QtCore import QPointF
+    from PySide6.QtGui import QPainterPath, QTextLayout, QTextOption
+    if not text or not text.strip():
+        return None
+    fm, s = _text_metrics(size_mm, bold, family)
+    font = QFont(resolve_family(family))
+    font.setPixelSize(100)
+    font.setBold(bold)
+    layout = QTextLayout(text.replace("\n", "\u2028"), font)
+    opt = QTextOption()
+    opt.setWrapMode(QTextOption.WrapMode.WordWrap)
+    layout.setTextOption(opt)
+    layout.beginLayout()
+    i = 0
+    while True:
+        line = layout.createLine()
+        if not line.isValid():
+            break
+        line.setLineWidth(max(width_mm, 0.5) / s)
+        line.setPosition(QPointF(0.0, i * fm.lineSpacing()))
+        i += 1
+    layout.endLayout()
+    ink = QPainterPath()
+    for run in layout.glyphRuns():
+        raw = run.rawFont()
+        for glyph, pos in zip(run.glyphIndexes(), run.positions()):
+            path = raw.pathForGlyph(glyph)
+            path.translate(pos)
+            ink.addPath(path)
+    if ink.isEmpty():
+        return None
+    r = ink.boundingRect()
+    return r.top() * s, r.bottom() * s
 
 
 def _label_block_h(et: EtiquetaItem) -> float:
@@ -2778,7 +2832,7 @@ class InlineTextEditor(QGraphicsTextItem):
         m = item.model
         self._original = m.text
         size_mm = float(m.size_pt) * PT_TO_MM
-        font = QFont(getattr(m, "family", "") or "Sans Serif")
+        font = QFont(resolve_family(getattr(m, "family", "")))
         font.setPixelSize(100)                # like _draw_text_mm…
         font.setBold(bool(getattr(m, "bold", False)))
         font.setItalic(bool(getattr(m, "italic", False)))
@@ -11044,7 +11098,7 @@ class ComposerWindow(QMainWindow):
             bold = bool(it.get("bold", True))
             fm = fonts.get(bold)
             if fm is None:
-                font = QFont("Sans Serif")
+                font = QFont(resolve_family("Sans Serif"))
                 font.setPixelSize(100)
                 font.setBold(bold)
                 fm = fonts[bold] = QFontMetricsF(font)

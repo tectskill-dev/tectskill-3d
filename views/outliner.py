@@ -49,6 +49,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QDialog,
 
 from core import outliner
 from core.group import Group
+from core.brand import APP_NAME
 from core.i18n import tr
 from core.section import SectionPlane
 from views.layers_toolbar import isolate_icon
@@ -456,7 +457,7 @@ class BatchRenameDialog(QDialog):
         self._Item = QTableWidgetItem
         # As Preferences: «— IngeTrazo» in the title, one tab per way of
         # renaming, forms with their labels, OK and Cancel at the bottom.
-        self.setWindowTitle(tr("Rename selected") + " — IngeTrazo")
+        self.setWindowTitle(tr("Rename selected") + " — " + APP_NAME)
         self.setMinimumWidth(440)
         self.resize(480, 440)
         self.old = list(old_names)
@@ -569,7 +570,7 @@ class MaterialLibraryDialog(QDialog):
         from PySide6.QtWidgets import QListWidget, QScrollArea
         from PySide6.QtWidgets import QDialogButtonBox
         from views.theme import style as theme_style
-        self.setWindowTitle(tr("Materials") + " — IngeTrazo")
+        self.setWindowTitle(tr("Materials") + " — " + APP_NAME)
         self.resize(660, 480)
         self.chosen = None
         self._catalog = library_catalog()

@@ -44,6 +44,7 @@ from PySide6.QtWidgets import (
 
 from core import _native
 from core import general_settings as _gs
+from core.brand import APP_NAME
 from core.i18n import LANGUAGE_NAMES as _LANGUAGE_NAMES
 from core.i18n import SYSTEM as SYSTEM_LANGUAGE
 from core.i18n import (available_languages, current_language,
@@ -76,7 +77,7 @@ class PreferencesDialog(QDialog):
     def __init__(self, window) -> None:
         super().__init__(window)
         self._window = window
-        self.setWindowTitle(tr("Preferences") + " — IngeTrazo")
+        self.setWindowTitle(tr("Preferences") + " — " + APP_NAME)
         self.setMinimumWidth(440)
         st = QSettings()
 

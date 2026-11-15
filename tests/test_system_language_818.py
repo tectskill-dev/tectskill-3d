@@ -143,7 +143,8 @@ def test_pinning_another_language_over_the_system_one_asks_a_restart(prefs):
 def test_startup_resolves_the_saved_choice(saved, tmp_path, monkeypatch,
                                            system_is_french):
     """main._init_language runs the same resolution as the menus: an
-    unset choice or "system" starts in the OS language, never crashes
+    unset choice starts in the edition's default language, "system" in the
+    OS language, and it never crashes
     nor activates a catalog literally named "system"."""
     import main
     path = tmp_path / "start.ini"
@@ -158,7 +159,12 @@ def test_startup_resolves_the_saved_choice(saved, tmp_path, monkeypatch,
     before = i18n.current_language()
     try:
         main._init_language()
-        expected = "de" if saved == "de" else "fr"
+        # TectSkill-3D: no choice yet opens in its DEFAULT_LANGUAGE (Thai);
+        # an explicit "system" still follows the OS, a pinned one wins.
+        from core.brand import DEFAULT_LANGUAGE
+        expected = ("de" if saved == "de"
+                    else DEFAULT_LANGUAGE if saved is None and DEFAULT_LANGUAGE
+                    else "fr")
         assert i18n.current_language() == expected
         assert installed == [expected]
     finally:
